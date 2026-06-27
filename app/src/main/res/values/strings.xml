@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">GPS Satellite Status</string>
+    <string name="permission_title">Location permission required</string>
+    <string name="permission_body">This app needs fine location access to read GNSS satellite signal data from your device. No location is stored or sent anywhere.</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="summary_title">GNSS overview</string>
+    <string name="in_view">In view</string>
+    <string name="used_in_fix">Used in fix</string>
+    <string name="avg_signal">Avg signal</string>
+    <string name="gps_enabled">GPS provider enabled</string>
+    <string name="gps_disabled">GPS provider disabled — enable location in system settings</string>
+    <string name="sky_plot_title">Sky plot</string>
+    <string name="satellite_list_title">Satellites</string>
+    <string name="waiting_for_satellites">Waiting for satellite signals… Move outdoors with a clear view of the sky.</string>
+    <string name="satellite_detail">Elev %1$.0f° · Az %2$.0f°</string>
+    <string name="status_used">Used in fix</string>
+    <string name="status_ephemeris">Ephemeris</string>
+    <string name="status_almanac">Almanac</string>
+    <string name="status_visible">Visible</string>
+</resources>

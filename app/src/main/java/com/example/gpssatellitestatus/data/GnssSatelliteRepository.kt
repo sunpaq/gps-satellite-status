@@ -42,6 +42,7 @@ class DefaultGnssSatelliteRepository(context: Context) : GnssSatelliteRepository
   override var minCn0Threshold: Float = 0f
 
   override var locationPriority: Int = Priority.PRIORITY_HIGH_ACCURACY
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     set(value) {
       field = value
       if (isRegistered) {
@@ -53,7 +54,9 @@ class DefaultGnssSatelliteRepository(context: Context) : GnssSatelliteRepository
 
   private var isRegistered = false
 
-  private val locationCallback = object : LocationCallback() {
+  private val useFusedLocation = false
+
+  private val fusedLocationCallback = object : LocationCallback() {
     override fun onLocationResult(result: LocationResult) {
       val location = result.lastLocation ?: return
       _status.update {
@@ -66,7 +69,16 @@ class DefaultGnssSatelliteRepository(context: Context) : GnssSatelliteRepository
   }
 
   private val locationListener = object : LocationListener {
-    override fun onLocationChanged(location: Location) {}
+    override fun onLocationChanged(location: Location) {
+      if (!useFusedLocation) {
+        _status.update {
+          it.copy(
+            currentLocation = location,
+            locationHistory = it.locationHistory + location
+          )
+        }
+      }
+    }
     @Deprecated("Deprecated in Java")
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
     override fun onProviderEnabled(provider: String) { refreshDeviceState() }
@@ -146,16 +158,18 @@ class DefaultGnssSatelliteRepository(context: Context) : GnssSatelliteRepository
         mainHandler.looper
       )
 
-      // Start Fused Location updates for better accuracy reporting
-      val locationRequest = LocationRequest.Builder(locationPriority, 1000L)
-        .setMinUpdateIntervalMillis(500L)
-        .build()
+      if (useFusedLocation) {
+        // Start Fused Location updates for better accuracy reporting
+        val locationRequest = LocationRequest.Builder(locationPriority, 1000L)
+          .setMinUpdateIntervalMillis(500L)
+          .build()
 
-      fusedLocationClient.requestLocationUpdates(
-        locationRequest,
-        locationCallback,
-        mainHandler.looper
-      )
+        fusedLocationClient.requestLocationUpdates(
+          locationRequest,
+          fusedLocationCallback,
+          mainHandler.looper
+        )
+      }
 
       isRegistered = true
       _status.update { it.copy(isListening = true, gnssSupported = true) }
@@ -168,7 +182,7 @@ class DefaultGnssSatelliteRepository(context: Context) : GnssSatelliteRepository
     if (!isRegistered) return
     locationManager.unregisterGnssStatusCallback(gnssCallback)
     locationManager.removeUpdates(locationListener)
-    fusedLocationClient.removeLocationUpdates(locationCallback)
+    fusedLocationClient.removeLocationUpdates(fusedLocationCallback)
     isRegistered = false
     _status.update { it.copy(isListening = false) }
   }

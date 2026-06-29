@@ -218,7 +218,7 @@ class GpsService : Service() {
     private fun acquireWakeLock() {
         if (wakeLock == null) {
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GpsService::WakeLock")
-            wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
+            wakeLock?.acquire()
         }
     }
 
